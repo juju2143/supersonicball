@@ -1,6 +1,7 @@
 return {
 	name="Original Level Pack",
 	author="DJ Omnimaga",
+	spritesheet="sprites.png",
 	count=16,
 	{
 		name = "Level 1",
@@ -114,7 +115,7 @@ return {
 		length = 256,
 		scrollspeed = 8
 	},
-	{--TODO: put the right graphics from this point to the end
+	{
 		name = "Level 9",
 		seed = 9,
 		rndintrv = 1,
