@@ -2,6 +2,7 @@
 
 - You can only influence bounce direction whilst touching something
 - Vectorized ball
+- It runs when zipped now
 
 "Christmas release" (0.9.1) 2013/12/24
 
