@@ -1,3 +1,9 @@
+"Christmas bugfixes" (0.9.2) 2013/12/25
+
+- You can only influence bounce direction whilst touching something
+- Vectorized ball
+- It runs when zipped now
+
 "Christmas release" (0.9.1) 2013/12/24
 
 - Updated graphics
