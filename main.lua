@@ -1,6 +1,6 @@
 function love.load()
 	http = require("socket.http")
-	JSON = (loadfile "json.lua")()
+	JSON = love.filesystem.load("json.lua")()
 	
 	--lil hack so it works with LÖVE 0.9.0
 	love.graphics.drawq = love.graphics.drawq or love.graphics.draw
