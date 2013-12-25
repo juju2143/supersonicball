@@ -2,6 +2,7 @@
 
 - You can only influence bounce direction whilst touching something
 - Vectorized ball
+- The zipped .love should work
 
 "Christmas release" (0.9.1) 2013/12/24
 
