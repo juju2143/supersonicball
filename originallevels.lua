@@ -193,8 +193,8 @@ return {
         minheight = 5,
         maxheight = 6,
         time = 150,
-        bgspr = {7,7,14,14},
-        wallspr = {0,0,14,14},
+        bgspr = {7,7,7,7,7,7,7,7,7,7,14,14,14,14,14,14,14,14,14,14},
+        wallspr = {0,0,0,0,0,0,0,0,0,0,14,14,14,14,14,14,14,14,14,14},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
@@ -222,7 +222,7 @@ return {
         maxheight = 5,
         time = 666,
         bgspr = {14},
-        wallspr = {14,14,14,16},
+        wallspr = {14,14,14,14,16},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1

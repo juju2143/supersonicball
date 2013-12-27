@@ -4,6 +4,12 @@
 - Vectorized ball
 - The zipped .love should work
 - Removed LÖVE 0.8.0 compatibility
+- Tons of under-the-hood stuff
+- Lowercase letters
+- Beginnings of level-pack usefullness
+- Resizable window
+- Sprite fixes
+- Other things
 
 "Christmas release" (0.9.1) 2013/12/24
 
