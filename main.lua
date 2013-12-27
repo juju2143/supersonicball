@@ -166,6 +166,8 @@ function loadLevel(l)
     end
 end
 
+function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levels.name.."&version="..version) end
+
 function love.update(dt)
     gametime = gametime+dt
     if state == "intro" then
@@ -228,7 +230,7 @@ function love.update(dt)
         if love.keyboard.isDown("escape") then
             state = "intro"
         end
-        if love.keyboard.isDown("z") then
+        --[[if love.keyboard.isDown("z") then
             if level > 1 then
                 level = level-1
                 loadLevel(level)
@@ -239,7 +241,7 @@ function love.update(dt)
                 level = level+1
                 loadLevel(level)
             end
-        end
+        end]]--
         if ball.body:getX() > 32*levels[level].length then
             level = level+1
             score = score+time*10
@@ -266,7 +268,7 @@ function love.update(dt)
         end
     elseif state == "scoreboard" then
         if scoreboard == nil then
-            scoreboard = http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levels.name.."&version="..version)
+            scoreboard = loadScoreboard(version,levels.name)
             if scoreboard ~= nil then
                 --[[i=1
                 for c, k, v in string.gmatch(scoreboard, "(%w+)\t(%w+)\t(%w+)") do
@@ -284,6 +286,16 @@ function love.update(dt)
                 end
             end
         end
+        if love.keyboard.isDown("left") then
+            levelpack = (levelpack-2)%#levelpacks+1
+            loadLevelpack(levelpack)
+            scoreboard = loadScoreboard(version,levels.name)
+        end
+        if love.keyboard.isDown("right") then
+            levelpack = levelpack%#levelpacks+1
+            loadLevelpack(levelpack)
+            scoreboard = loadScoreboard(version,levels.name)
+        end
         if love.keyboard.isDown("escape") then
             state = "intro"
         end
@@ -299,14 +311,14 @@ function pairMatch(a,b,x,y)
 end
 
 function beginContact(a, b, coll)
-    print("begin collision",a:getUserData(),b:getUserData())
+    --print("begin collision",a:getUserData(),b:getUserData())
     if pairMatch(a:getUserData(),b:getUserData(),0,1) then
         touchnorm = true
     end
 end
 
 function endContact(a, b, coll)
-    print("end   collision",a:getUserData(),b:getUserData())
+    --print("end   collision",a:getUserData(),b:getUserData())
     if pairMatch(a:getUserData(),b:getUserData(),0,1) then
         touchnorm = false
     end
@@ -419,14 +431,15 @@ function love.draw()
     elseif state == "scoreboard" then
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
-        love.graphics.printf("HIGH SCORES", 16, 16, windowWidth-32, "center")
+        printCenter("HIGH SCORES",16)
+        printCenter(levels.name,32)
         if scoreboard == nil then
-            love.graphics.printf("LOADING...", 16, 48, windowWidth-32, "left")
+            love.graphics.printf("LOADING...", 16, 64, windowWidth-32, "left")
         else
             for i=1,#scores do
-                love.graphics.draw(flags[i], 16, 34+16*i)
-                love.graphics.printf(scores[i]["name"], 32, 32+16*i, windowWidth-32, "left")
-                love.graphics.printf(scores[i]["score"], 16, 32+16*i, windowWidth-32, "right")
+                love.graphics.draw(flags[i], 16, 50+16*i)
+                love.graphics.printf(scores[i]["name"], 32, 50+16*i, windowWidth-32, "left")
+                love.graphics.printf(scores[i]["score"], 16, 50+16*i, windowWidth-32, "right")
             end
         end
         love.graphics.printf("PRESS ESCAPE", 0, windowHeight-32, windowWidth, "center")
@@ -462,5 +475,5 @@ function love.draw()
 
         ]], 16, 16, windowWidth-32, "left")
     end
-    love.graphics.printf(love.timer.getFPS(),0,windowHeight-16,windowWidth,"right")
+    --love.graphics.printf(love.timer.getFPS(),0,windowHeight-16,windowWidth,"right")
 end
