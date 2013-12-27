@@ -4,14 +4,8 @@ function love.conf(t)
     t.url = "http://julosoft.net/supersonicball/" -- The website of the game (string)
     t.identity = nil            -- The name of the save directory (string)
     t.console = false           -- Attach a console (boolean, Windows only)
-    if t.window == nil then
-        t.version = "0.8.0"         -- The LÖVE version this game was made for (string)
-    else
-        t.version = "0.9.0"
-    end
+    t.version = "0.9.0"
     t.release = false           -- Enable release mode (boolean)
-
-    t.window = t.window or t.screen
 
     t.window.width = 640        -- The window width (number)
     t.window.height = 480       -- The window height (number)
@@ -25,8 +19,6 @@ function love.conf(t)
     t.window.minheight = 1             -- Minimum window height if the window is resizable (number)
     t.window.fullscreentype = "normal" -- Standard fullscreen or desktop fullscreen mode (string)
     t.window.display = 1               -- Index of the monitor to show the window in (number)
-
-    t.screen = t.screen or t.window
 
     t.modules.joystick = false  -- Enable the joystick module (boolean)
     t.modules.audio = true      -- Enable the audio module (boolean)

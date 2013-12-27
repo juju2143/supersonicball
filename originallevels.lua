@@ -13,7 +13,7 @@ return {
         time = 100,
         bgspr = {7},
         wallspr = {3,4,5,6},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 4
     },
@@ -27,7 +27,7 @@ return {
         time = 100,
         bgspr = {19},
         wallspr = {2},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
     },
@@ -41,7 +41,7 @@ return {
         time = 100,
         bgspr = {22},
         wallspr = {1},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
     },
@@ -55,7 +55,7 @@ return {
         time = 60,
         bgspr = {19,20},
         wallspr = {23,24,25,26},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
     },
@@ -69,7 +69,7 @@ return {
         time = 36,
         bgspr = {1},
         wallspr = {16},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1
     },
@@ -83,7 +83,7 @@ return {
         time = 100,
         bgspr = {11,12,13,14},
         wallspr = {13,14,11,12},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1
     },
@@ -97,7 +97,7 @@ return {
         time = 150,
         bgspr = {8},
         wallspr = {0},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
     },
@@ -111,7 +111,7 @@ return {
         time = 100,
         bgspr = {16},
         wallspr = {15},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 8
     },
@@ -125,7 +125,7 @@ return {
         time = 70,
         bgspr = {22},
         wallspr = {7},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
     },
@@ -139,7 +139,7 @@ return {
         time = 120,
         bgspr = {6,5,4,3},
         wallspr = {3,4,5,6},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
     },
@@ -153,7 +153,7 @@ return {
         time = 320,
         bgspr = {10,11},
         wallspr = {21},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 4
     },
@@ -167,7 +167,7 @@ return {
         time = 200,
         bgspr = {17,18,14,18},
         wallspr = {27},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
     },
@@ -181,7 +181,7 @@ return {
         time = 100,
         bgspr = {7,14},
         wallspr = {4,8},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
     },
@@ -195,7 +195,7 @@ return {
         time = 150,
         bgspr = {7,7,14,14},
         wallspr = {0,0,14,14},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
     },
@@ -209,7 +209,7 @@ return {
         time = 300,
         bgspr = {16},
         wallspr = {8},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 8
     },
@@ -223,7 +223,7 @@ return {
         time = 666,
         bgspr = {14},
         wallspr = {14,14,14,16},
-        ballspr = {29},
+        ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1
     },

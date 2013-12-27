@@ -2,13 +2,10 @@ function love.load()
     http = require("socket.http")
     JSON = love.filesystem.load("json.lua")()
 
-    --lil hack so it works with LÖVE 0.9.0
-    love.graphics.drawq = love.graphics.drawq or love.graphics.draw
-    love.graphics.setCaption = love.graphics.setCaption or love.window.setTitle
-
     love.graphics.setBackgroundColor(0,0,0)
     state = "intro"
-    version = "0.9.1";
+    version = "0.9.2"
+    release = "Second Christmas"
 
     love.physics.setMeter(32)
     world = love.physics.newWorld(0, 9.81*32, true)
@@ -25,12 +22,8 @@ function love.load()
     w=1
     a=1
 
-    levelpack = "originallevels"
-    levels = love.filesystem.load(levelpack..".lua")()
-
-    sprites = love.graphics.newImage(levels.spritesheet)
-    sprites:setWrap("repeat", "repeat")
-    sprites:setFilter("nearest", "nearest")
+    levelpacks = {"originallevels"}
+    levelpack = 1
 
     csprites = {}
 
@@ -38,8 +31,8 @@ function love.load()
         return 1/(1+math.exp(-x))
     end
 
-    csprites.ball = love.graphics.newCanvas(32,32)
-    csprites.ball:renderTo(function ()
+    csprites.ballnorm = love.graphics.newCanvas(32,32)
+    csprites.ballnorm:renderTo(function ()
         local r, g, b, a = love.graphics.getColor()
         for i=0,16,.5 do
             local ilog = logistic((i-2)*1.5)
@@ -59,7 +52,7 @@ function love.load()
 
     --deffont = love.graphics.newFont()
     hudfont = love.graphics.newImageFont("fonts.png",
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ,'.!?:-*@ ")
+        "0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOÖoPpQqRrSsTtUuVvWwXxYyZz,'.!?:-*·⌚© ")
 
         allowed = {32,33,39,44,45,46,48,49,50,51,52,53,54,55,56,57,58,63,
             65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
@@ -77,11 +70,12 @@ function love.load()
     ball.fixture = love.physics.newFixture(ball.body, ball.shape, 1)
     ball.fixture:setRestitution(0.8)
     ball.fixture:setUserData(0)
-
-    loadLevel(level)
+    ball.body:setGravityScale(1)
 
     --love.graphics.setMode(640, 480)
-    love.graphics.setCaption("Supersonic Ball")
+    love.window.setTitle("Supersonic Ball")
+    loadLevelpack(levelpack)
+    loadSprites("sprites.png")
     music:play()
 end
 
@@ -94,9 +88,20 @@ function contains(table, element)
     return false
 end
 
+function loadSprites(ss)
+    sprites = love.graphics.newImage(ss)
+    sprites:setWrap("repeat", "repeat")
+    sprites:setFilter("nearest", "nearest")
+end
+
+function loadLevelpack(p)
+    levels = love.filesystem.load(levelpacks[p]..".lua")()
+    loadSprites(levels.spritesheet)
+end
+
 function loadLevel(l)
     touchnorm = false
-    math.randomseed(levels[l].seed)
+    love.math.setRandomSeed(levels[l].seed)
 
     for i=1,#plancher do
         plancher[i].fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
@@ -117,6 +122,7 @@ function loadLevel(l)
     plafond = {}
 
     ball.body:setPosition(64, 208)
+    ball.body:setLinearVelocity(0,0)
     time = time + levels[l].time
     if time > 1000 then time = 1000 end
     b=1
@@ -127,13 +133,13 @@ function loadLevel(l)
     currentposh = 240
     for i=1,levels[l].length do
         --[[if i%levels[l].rndintrv==0 and levels[l].slope>1 then
-            levels[l].slope = levels[l].slope + math.random(-1,1)
+            levels[l].slope = levels[l].slope + love.math.random(-1,1)
         else
-            levels[l].slope = levels[l].slope + math.random(0,1)
+            levels[l].slope = levels[l].slope + love.math.random(0,1)
         end
-        ]]--
+        ]]
         if i>=1 and i<=3 then currentposl = currentposl + 32
-        elseif i%levels[l].slope==0 then currentposl = currentposl + math.random(-1,1)*32
+        elseif i%levels[l].slope==0 then currentposl = currentposl + love.math.random(-1,1)*32
         end
         plancher[i] = {}
         plancher[i].body = love.physics.newBody(world, 32*i, currentposl)
@@ -146,7 +152,7 @@ function loadLevel(l)
             if i%levels[l].slope==0 then
                 if currentposh>=plancher[i].body:getY()-(32*levels[l].minheight+32) then currentposh = currentposh - 32
                 elseif currentposh<=plancher[i].body:getY()-(32*levels[l].maxheight+32) then currentposh = currentposh + 32
-                else currentposh = currentposh + math.random(-1,1)*32
+                else currentposh = currentposh + love.math.random(-1,1)*32
                 end
             end
         end
@@ -161,7 +167,7 @@ end
 function love.update(dt)
     gametime = gametime+dt
     if state == "intro" then
-        love.graphics.setCaption("Supersonic Ball")
+        love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("s") then
             scoreboard = nil
             state = "scoreboard"
@@ -169,15 +175,24 @@ function love.update(dt)
         if love.keyboard.isDown("h") then
             state = "help"
         end
+        if love.keyboard.isDown("left") then
+            levelpack = (levelpack-2)%#levelpacks+1
+            loadLevelpack(levelpack)
+        end
+        if love.keyboard.isDown("right") then
+            levelpack = levelpack%#levelpacks+1
+            loadLevelpack(levelpack)
+        end
         if love.keyboard.isDown("return") then
             score = 0
             time = 0
             level = 1
+            loadLevelpack(levelpack)
             loadLevel(1)
             state = "game"
         end
     elseif state == "game" then
-        love.graphics.setCaption("Supersonic Ball - "..love.timer.getFPS().." FPS - "..levels[level].name) --.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
+        love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - "..levels[level].name) --.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
         world:update(dt)
         time = time-dt
         ani = ani+dt
@@ -195,25 +210,27 @@ function love.update(dt)
         if love.keyboard.isDown("left") then
             ball.body:applyForce(-400, 0)
         end
-        if love.keyboard.isDown("up") then
-            if touchnorm then
+        if touchnorm then
+            if love.keyboard.isDown("up") then
                 ball.body:applyForce(0, -5000)
             end
-        end
-        if love.keyboard.isDown("down") then
-            if touchnorm then
+            if love.keyboard.isDown("down") then
                 ball.body:applyForce(0, 5000)
             end
         end
         if love.keyboard.isDown("r") then
             ball.body:setPosition(64, 208)
         end
-        --[[elseif love.keyboard.isDown("o") then
+        if love.keyboard.isDown("escape") then
+            state = "intro"
+        end
+        --[[if love.keyboard.isDown("z") then
             if level > 1 then
                 level = level-1
                 loadLevel(level)
             end
-        elseif love.keyboard.isDown("p") then
+        end
+        if love.keyboard.isDown("x") then
             if level < levels.count then
                 level = level+1
                 loadLevel(level)
@@ -233,12 +250,12 @@ function love.update(dt)
             state = "lost"
         end
     elseif state == "pause" then
-        love.graphics.setCaption("Supersonic Ball - "..love.timer.getFPS().." FPS - PAUSE - "..levels[level].name)--.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
+        love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - PAUSE - "..levels[level].name)--.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
     elseif state == "won" or state == "lost" then
-        love.graphics.setCaption("Supersonic Ball")
+        love.window.setTitle("Supersonic Ball")
         if state == "won" then
             if love.keyboard.isDown("return") then
-                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..levelpack)
+                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..levels.name)
                 scoreboard = nil
                 state = "scoreboard"
             end
@@ -250,7 +267,7 @@ function love.update(dt)
         end
     elseif state == "scoreboard" then
         if scoreboard == nil then
-            scoreboard = http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levelpack.."&version="..version)
+            scoreboard = http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levels.name.."&version="..version)
             if scoreboard ~= nil then
                 --[[i=1
                 for c, k, v in string.gmatch(scoreboard, "(%w+)\t(%w+)\t(%w+)") do
@@ -268,24 +285,30 @@ function love.update(dt)
                 end
             end
         end
-        if love.keyboard.isDown(" ") then
+        if love.keyboard.isDown("escape") then
             state = "intro"
         end
     elseif state == "help" then
-        if love.keyboard.isDown(" ") then
+        if love.keyboard.isDown("escape") then
             state = "intro"
         end
     end
 end
 
+function pairMatch(a,b,x,y)
+    return a == x and b == y or b == x and a == y
+end
+
 function beginContact(a, b, coll)
-    if a:getUserData() == 1 and b:getUserData() == 0 then
+    print("begin collision",a:getUserData(),b:getUserData())
+    if pairMatch(a:getUserData(),b:getUserData(),0,1) then
         touchnorm = true
     end
 end
 
 function endContact(a, b, coll)
-    if a:getUserData() == 1 and b:getUserData() == 0 then
+    print("end   collision",a:getUserData(),b:getUserData())
+    if pairMatch(a:getUserData(),b:getUserData(),0,1) then
         touchnorm = false
     end
 end
@@ -296,7 +319,7 @@ end
 function postSolve(a, b, coll)
 end
 
-function love.keypressed(key, unicode)
+function love.keypressed(key, isrepeat)
     if state ~= "won" then
         if key=='m' then
             if music:getVolume() == 1 then
@@ -314,12 +337,6 @@ function love.keypressed(key, unicode)
                 music:play()
                 state = "game"
             end
-        end
-    else
-        if contains(allowed, unicode) then
-            name = name..string.char(unicode);
-        elseif key=="backspace" then
-            name = string.sub(name, 1, -2)
         end
     end
 end
@@ -343,41 +360,41 @@ function love.draw()
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=0,20 do
             for j=0,15 do
-                love.graphics.drawq(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
+                love.graphics.draw(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
             end
         end
         for i=0,15 do
-            love.graphics.draw(csprites.ball, 0, 32*i)
-            love.graphics.draw(csprites.ball, 608, 32*i)
+            love.graphics.draw(csprites.ballnorm, 16, 32*i,gametime*10,1,1,16,16)
+            love.graphics.draw(csprites.ballnorm, 624, 32*i,gametime*10,1,1,16,16)
         end
         love.graphics.printf("JULOSOFT PRESENTS", 0, 32, 640, "center")
         love.graphics.draw(title, 72, 72)
+        love.graphics.printf(levels.name, 0, 288, 640, "center")
         love.graphics.printf("PRESS ENTER", 0, 320, 640, "center")
         love.graphics.printf("PRESS S FOR HIGHSCORES", 0, 400, 640, "center")
         love.graphics.printf("PRESS H FOR HELP AND CREDITS", 0, 416, 640, "center")
-        love.graphics.printf("@2013 DJ OMNIMAGA - OMNIMAGA.ORG", 0, 432, 640, "center")
-        love.graphics.printf("@2013 JUJU2143 - JULOSOFT.NET", 0, 448, 640, "center")
+        love.graphics.printf("©2013 DJ OMNIMAGA - OMNIMAGA.ORG", 0, 432, 640, "center")
+        love.graphics.printf("©2013 JUJU2143 - JULOSOFT.NET", 0, 448, 640, "center")
         love.graphics.printf(version, 0, 464, 640, "left")
     elseif state == "game" or state == "pause" then
         geometry = love.graphics.newQuad(levels[level].bgspr[b]%8*32,math.floor(levels[level].bgspr[b]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=0,20 do
             for j=0,15 do
-                love.graphics.drawq(sprites, geometry, 32*i-ball.body:getX()/levels[level].scrollspeed%32, 32*j-ball.body:getY()/levels[level].scrollspeed%32)
+                love.graphics.draw(sprites, geometry, 32*i-ball.body:getX()/levels[level].scrollspeed%32, 32*j-ball.body:getY()/levels[level].scrollspeed%32)
             end
         end
         love.graphics.push();
         love.graphics.translate(-ball.body:getX()+320, -ball.body:getY()+240)
 
         love.graphics.setColor(255,255,255)
-        geometry = love.graphics.newQuad(levels[level].ballspr[a]%8*32,math.floor(levels[level].ballspr[a]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
-        love.graphics.draw(csprites.ball, ball.body:getX(), ball.body:getY(), ball.body:getAngle(), 1, 1, ball.shape:getRadius(), ball.shape:getRadius())
+        love.graphics.draw(csprites[levels[level].ballspr[a]], ball.body:getX(), ball.body:getY(), ball.body:getAngle(), 1, 1, ball.shape:getRadius(), ball.shape:getRadius())
 
         geometry = love.graphics.newQuad(levels[level].wallspr[w]%8*32,math.floor(levels[level].wallspr[w]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=1,levels[level].length do
-            love.graphics.drawq(sprites, geometry, plancher[i].body:getX()-16, plancher[i].body:getY()-16)
+            love.graphics.draw(sprites, geometry, plancher[i].body:getX()-16, plancher[i].body:getY()-16)
         end
         for i=1,levels[level].length do
-            love.graphics.drawq(sprites, geometry, plafond[i].body:getX()-16, plafond[i].body:getY()-16)
+            love.graphics.draw(sprites, geometry, plafond[i].body:getX()-16, plafond[i].body:getY()-16)
         end
         love.graphics.pop();
         love.graphics.print("SCORE", 16, 16);
@@ -385,7 +402,7 @@ function love.draw()
         love.graphics.print("TIME", 560, 16);
         love.graphics.print(string.format("%06d", score), 16, 32);
         love.graphics.print(string.format("%02d", level), 128, 32);
-        love.graphics.print(string.format("*%03d",time), 560, 32);
+        love.graphics.print(string.format("⌚%03d",time), 560, 32);
         if state == "pause" then
             love.graphics.print("PAUSE", 280, 200)
         end
@@ -393,7 +410,7 @@ function love.draw()
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=0,20 do
             for j=0,15 do
-                love.graphics.drawq(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
+                love.graphics.draw(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
             end
         end
         love.graphics.printf(string.upper("congratulations you won!\nscore: "..string.format("%06d", score).."\n\nenter your name and press enter:\n"..name), 16, 16, 624, "left")
@@ -401,7 +418,7 @@ function love.draw()
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=0,20 do
             for j=0,15 do
-                love.graphics.drawq(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
+                love.graphics.draw(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
             end
         end
         love.graphics.printf(string.upper("congratulations you weren't fast enough so you died!\nscore: "..string.format("%06d", score).."\n\npress enter"), 16, 16, 624, "left")
@@ -409,7 +426,7 @@ function love.draw()
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=0,20 do
             for j=0,15 do
-                love.graphics.drawq(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
+                love.graphics.draw(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
             end
         end
         love.graphics.printf("HIGH SCORES", 16, 16, 608, "center")
@@ -427,35 +444,36 @@ function love.draw()
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         for i=0,20 do
             for j=0,15 do
-                love.graphics.drawq(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
+                love.graphics.draw(sprites, geometry, 32*i-(gametime*30)%32, 32*j-(gametime*30)%32)
             end
         end
-        love.graphics.printf(string.upper([[Supersonic Ball PC ]]..version..[[
+        love.graphics.printf([[Supersonic Ball PC ]]..version..[[
 
-        Christmas Release
-        Port by juju2143
+        ]]..release..[[ Release
+        Port by: juju2143
         Contributions by:
-         - bb010g
+        · bb010g
         Original by DJ Omnimaga
+        Made with LÖVE
 
         How to play
-        Arrow keys: move
+        Arrow keys: Move
         M: Mute
         P: Pause
         Q: Quit
         R: Restart
+        Escape: Return to menu
 
-        Goal
-        get to the end before time runs out
-        try not to get epilepsy
-        good luck.
+        Goal:
+        Get to the end before time runs out
+        Try not to get epilepsy
+        Good luck.
 
         In memory of Tribal 1992-2013
 
         Omnimaga.org
         Julosoft.net
 
-        Press space
-        ]]), 16, 16, 608, "left")
+        ]], 16, 16, 608, "left")
     end
 end

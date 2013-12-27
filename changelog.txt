@@ -1,8 +1,9 @@
-"Christmas bugfixes" (0.9.2) 2013/12/25
+"Second Christmas" (0.9.2) 2013/12/25
 
 - You can only influence bounce direction whilst touching something
 - Vectorized ball
 - The zipped .love should work
+- Removed LÖVE 0.8.0 compatibility
 
 "Christmas release" (0.9.1) 2013/12/24
 
