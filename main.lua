@@ -166,7 +166,7 @@ function loadLevel(l)
     end
 end
 
-function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levels.name.."&version="..version) end
+function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levelpacks[levelpack].."&version="..version) end
 
 function love.update(dt)
     gametime = gametime+dt
@@ -201,7 +201,7 @@ function love.update(dt)
         time = time-dt
         ani = ani+dt
 
-        if ani > .1 then
+        if ani > levels[level].anispeed then
             if b == #levels[level].bgspr then b=1 else b=b+1 end
             if w == #levels[level].wallspr then w=1 else w=w+1 end
             if a == #levels[level].ballspr then a=1 else a=a+1 end
@@ -261,7 +261,7 @@ function love.update(dt)
         love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("return") then
             if state == "won" then
-                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..levels.name)
+                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..levelpacks[levelpack])
             end
             scoreboard = nil
             state = "scoreboard"

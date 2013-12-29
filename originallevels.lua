@@ -15,7 +15,8 @@ return {
         wallspr = {3,4,5,6},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 4
+        scrollspeed = 4,
+		anispeed = .1
     },
     {
         name = "Level 2",
@@ -29,7 +30,8 @@ return {
         wallspr = {2},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 2
+        scrollspeed = 2,
+		anispeed = .1
     },
     {
         name = "Level 3",
@@ -43,7 +45,8 @@ return {
         wallspr = {15},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 3
+        scrollspeed = 3,
+		anispeed = .1
     },
     {
         name = "Level 4",
@@ -57,7 +60,8 @@ return {
         wallspr = {23,24,25,26},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 3
+        scrollspeed = 3,
+		anispeed = .1
     },
     {
         name = "Level 5",
@@ -71,7 +75,8 @@ return {
         wallspr = {16},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 1
+        scrollspeed = 1,
+		anispeed = .1
     },
     {
         name = "Level 6",
@@ -85,7 +90,8 @@ return {
         wallspr = {12,13,12,11},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 1
+        scrollspeed = 1,
+		anispeed = .1
     },
     {
         name = "Level 7",
@@ -99,7 +105,8 @@ return {
         wallspr = {9},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 2
+        scrollspeed = 2,
+		anispeed = .1
     },
     {
         name = "Level 8",
@@ -113,7 +120,8 @@ return {
         wallspr = {0},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 8
+        scrollspeed = 8,
+		anispeed = .1
     },
     {
         name = "Level 9",
@@ -127,7 +135,8 @@ return {
         wallspr = {1},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 3
+        scrollspeed = 3,
+		anispeed = .1
     },
     {
         name = "Level 10",
@@ -141,7 +150,8 @@ return {
         wallspr = {3,4,5,6},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 2
+        scrollspeed = 2,
+		anispeed = .1
     },
     {
         name = "Level 11",
@@ -155,7 +165,8 @@ return {
         wallspr = {27},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 4
+        scrollspeed = 4,
+		anispeed = .1
     },
     {
         name = "Level 12",
@@ -169,7 +180,8 @@ return {
         wallspr = {34},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 3
+        scrollspeed = 3,
+		anispeed = .1
     },
     {
         name = "Level 13",
@@ -183,7 +195,8 @@ return {
         wallspr = {8,24},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 2
+        scrollspeed = 2,
+		anispeed = .1
     },
     {
         name = "Level 14",
@@ -197,7 +210,8 @@ return {
         wallspr = {9,9,14,14},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 2
+        scrollspeed = 2,
+		anispeed = .1
     },
     {
         name = "Level 15",
@@ -211,7 +225,8 @@ return {
         wallspr = {8},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 8
+        scrollspeed = 8,
+		anispeed = .1
     },
     {
         name = "Level 16",
@@ -225,6 +240,7 @@ return {
         wallspr = {14,16},
         ballspr = {"ballnorm"},
         length = 256,
-        scrollspeed = 1
+        scrollspeed = 1,
+		anispeed = .1
     },
 }
