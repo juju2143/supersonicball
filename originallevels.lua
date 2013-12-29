@@ -39,8 +39,8 @@ return {
         minheight = 4,
         maxheight = 5,
         time = 100,
-        bgspr = {22},
-        wallspr = {1},
+        bgspr = {21},
+        wallspr = {15},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
@@ -81,8 +81,8 @@ return {
         minheight = 5,
         maxheight = 9,
         time = 100,
-        bgspr = {11,12,13,14},
-        wallspr = {13,14,11,12},
+        bgspr = {11,12,13,12},
+        wallspr = {12,13,12,11},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1
@@ -96,7 +96,7 @@ return {
         maxheight = 5,
         time = 150,
         bgspr = {8},
-        wallspr = {0},
+        wallspr = {9},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
@@ -110,7 +110,7 @@ return {
         maxheight = 5,
         time = 100,
         bgspr = {16},
-        wallspr = {15},
+        wallspr = {0},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 8
@@ -124,7 +124,7 @@ return {
         maxheight = 6,
         time = 70,
         bgspr = {22},
-        wallspr = {7},
+        wallspr = {1},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
@@ -151,8 +151,8 @@ return {
         minheight = 4,
         maxheight = 8,
         time = 320,
-        bgspr = {10,11},
-        wallspr = {21},
+        bgspr = {10},
+        wallspr = {27},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 4
@@ -165,8 +165,8 @@ return {
         minheight = 4,
         maxheight = 3,
         time = 200,
-        bgspr = {17,18,14,18},
-        wallspr = {27},
+        bgspr = {17,18},
+        wallspr = {34},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3
@@ -179,8 +179,8 @@ return {
         minheight = 4,
         maxheight = 5,
         time = 100,
-        bgspr = {7,14},
-        wallspr = {4,8},
+        bgspr = {2},
+        wallspr = {8,24},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
@@ -193,8 +193,8 @@ return {
         minheight = 5,
         maxheight = 6,
         time = 150,
-        bgspr = {7,7,7,7,7,7,7,7,7,7,14,14,14,14,14,14,14,14,14,14},
-        wallspr = {0,0,0,0,0,0,0,0,0,0,14,14,14,14,14,14,14,14,14,14},
+        bgspr = {7,7,14,14},
+        wallspr = {9,9,14,14},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2
@@ -222,7 +222,7 @@ return {
         maxheight = 5,
         time = 666,
         bgspr = {14},
-        wallspr = {14,14,14,14,16},
+        wallspr = {14,16},
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1
