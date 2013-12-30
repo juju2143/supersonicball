@@ -1,5 +1,6 @@
 return {
     name="Original Level Pack",
+    shortname="originalLevels",
     author="DJ Omnimaga",
     spritesheet="sprites.png",
     count=16,

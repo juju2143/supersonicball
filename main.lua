@@ -22,7 +22,7 @@ function love.load()
     w=1
     a=1
 
-    levelpacks = {"originallevels","newlevels"}
+    levelpacks = {"originallevels"}
     levelpack = 1
     currentLevelTable = loadLevelpack(levelpack)
 
@@ -92,6 +92,7 @@ end
 function packToLevelTable(pack)
     local levelTable = {}
     levelTable.name = pack.name
+    levelTable.shortname = pack.shortname
     levelTable.author = pack.author
     levelTable.spritesheet = pack.spritesheet
     levelTable.count = pack.count
@@ -209,7 +210,7 @@ function loadLevel(levelTable)
     currentBlocks = levelTable.levelBlocks()
 end
 
-function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levelpacks[levelpack].."&version="..version) end
+function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..currentLevelTable.shortname.."&version="..version) end
 
 function love.update(dt)
     gametime = gametime+dt
