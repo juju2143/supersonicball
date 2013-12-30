@@ -16,7 +16,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 4,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 2",
@@ -31,7 +31,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 3",
@@ -46,7 +46,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 4",
@@ -61,7 +61,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 5",
@@ -76,7 +76,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 6",
@@ -91,7 +91,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 7",
@@ -106,7 +106,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 8",
@@ -121,7 +121,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 8,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 9",
@@ -136,7 +136,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 10",
@@ -151,7 +151,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 11",
@@ -166,7 +166,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 4,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 12",
@@ -181,7 +181,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 3,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 13",
@@ -196,7 +196,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 14",
@@ -211,7 +211,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 2,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 15",
@@ -226,7 +226,7 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 8,
-		anispeed = .1
+        anispeed = .1
     },
     {
         name = "Level 16",
@@ -241,6 +241,6 @@ return {
         ballspr = {"ballnorm"},
         length = 256,
         scrollspeed = 1,
-		anispeed = .1
+        anispeed = .1
     },
 }

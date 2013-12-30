@@ -23,8 +23,9 @@ function love.load()
     w=1
     a=1
 
-    levelpacks = {"originallevels"}
+    levelpacks = {"originallevels","newlevels"}
     levelpack = 1
+    currentLevelTable = loadLevelpack(levelpack)
 
     csprites = {}
 
@@ -55,15 +56,14 @@ function love.load()
     hudfont = love.graphics.newImageFont("fonts.png",
         "0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOÖoPpQqRrSsTtUuVvWwXxYyZz,'.!?:-*·⌚© ")
 
-	allowed = {32,33,39,44,45,46,48,49,50,51,52,53,54,55,56,57,58,63,
-		65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
-		97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122}
+    allowed = {32,33,39,44,45,46,48,49,50,51,52,53,54,55,56,57,58,63,
+        65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
+        97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122}
 
     music = love.audio.newSource("void.ogg")
     music:setLooping(true)
 
-    plancher = {}
-    plafond = {}
+    currentBlocks = {}
 
     ball = {}
     ball.body = love.physics.newBody(world, 64, 208, "dynamic")
@@ -90,6 +90,39 @@ function contains(table, element)
     return false
 end
 
+function packToLevelTable(pack)
+    local levelTable = {}
+    levelTable.name = pack.name
+    levelTable.author = pack.author
+    levelTable.spritesheet = pack.spritesheet
+    levelTable.count = pack.count
+    levelTable.levels = {}
+    for i=1,levelTable.count do
+        levelTable.levels[i] = pack[i]
+    end
+    levelTable.level = 1
+    levelTable.gotoFirstLevel = function () levelTable.level = 1 end
+    levelTable.gotoNextLevel = function () if levelTable.level ~= pack.count
+        then levelTable.level = levelTable.level + 1; return true
+        else return false end
+    end
+    levelTable.gotoPreviousLevel = function () if levelTable.level ~= 1
+        then levelTable.level = levelTable.level - 1; return true
+        else return false end
+    end
+    local currentLevel = function () return levelTable.levels[levelTable.level] end
+    levelTable.levelName = function () return currentLevel().name end
+    levelTable.levelTime = function () return currentLevel().time end
+    levelTable.levelLength = function () return currentLevel().length end
+    levelTable.levelBgspr = function () return currentLevel().bgspr end
+    levelTable.levelWallspr = function () return currentLevel().wallspr end
+    levelTable.levelBallspr = function () return currentLevel().ballspr end
+    levelTable.levelScrollspeed = function () return currentLevel().scrollspeed end
+    levelTable.levelAnispeed = function () return currentLevel().anispeed end
+    levelTable.levelBlocks = function () return generateBlocks(currentLevel().seed,currentLevel().rndintrv,currentLevel().slope,currentLevel().minheight,currentLevel().maxheight,currentLevel().length) end
+    return levelTable
+end
+
 function loadSprites(ss)
     sprites = love.graphics.newImage(ss)
     sprites:setWrap("repeat", "repeat")
@@ -97,73 +130,84 @@ function loadSprites(ss)
 end
 
 function loadLevelpack(p)
+    local levels
     levels = love.filesystem.load(levelpacks[p]..".lua")()
+    levels = packToLevelTable(levels)
     loadSprites(levels.spritesheet)
+    return levels
 end
 
-function loadLevel(l)
-    touchnorm = false
-    love.math.setRandomSeed(levels[l].seed)
-
-    for i=1,#plancher do
-        plancher[i].fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-        plancher[i].body = nil
-        plancher[i].shape = nil
-        plancher[i].fixture = nil
-        plancher[i] = nil
+function physicsClean(array)
+    for i, v in ipairs(array) do
+        v.fixture:destroy()
+        v.body = nil
+        v.shape = nil
+        v.fixture = nil
+        v = nil
     end
-    for i=1,#plafond do
-        plafond[i].fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-        plafond[i].body = nil
-        plafond[i].shape = nil
-        plafond[i].fixture = nil
-        plafond[i] = nil
-    end
-    collectgarbage("collect")
-    plancher = {}
-    plafond = {}
+end
 
-    ball.body:setPosition(64, 208)
-    ball.body:setLinearVelocity(0,0)
-    time = time + levels[l].time
-    if time > 1000 then time = 1000 end
-    b=1
-    w=1
-    a=1
-
-    currentposl = 208
-    currentposh = 240
-    for i=1,levels[l].length do
-        --[[if i%levels[l].rndintrv==0 and levels[l].slope>1 then
-            levels[l].slope = levels[l].slope + love.math.random(-1,1)
+function generateBlocks(seed,rndintrv,slope,minheight,maxheight,length)
+    local floor,roof,blockset,currentposl,currentposh
+    currentposl, currentposh = 208, 240
+    floor, roof = {}, {}
+    love.math.setRandomSeed(seed)
+    for i=1,length do
+        --[[if i%rndintrv==0 and slope>1 then
+            slope = slope + love.math.random(-1,1)
         else
-            levels[l].slope = levels[l].slope + love.math.random(0,1)
+            slope = slope + love.math.random(0,1)
         end
         ]]
         if i>=1 and i<=3 then currentposl = currentposl + 32
-        elseif i%levels[l].slope==0 then currentposl = currentposl + love.math.random(-1,1)*32
+        elseif i%slope==0 then currentposl = currentposl + love.math.random(-1,1)*32
         end
-        plancher[i] = {}
-        plancher[i].body = love.physics.newBody(world, 32*i, currentposl)
-        plancher[i].shape = love.physics.newRectangleShape(0, 0, 32, 32)
-        plancher[i].fixture = love.physics.newFixture(plancher[i].body, plancher[i].shape)
-        plancher[i].fixture:setUserData(1)
+        floor[i] = {}
+        floor[i].body = love.physics.newBody(world, 32*i, currentposl)
+        floor[i].shape = love.physics.newRectangleShape(0, 0, 32, 32)
+        floor[i].fixture = love.physics.newFixture(floor[i].body, floor[i].shape)
+        floor[i].fixture:setUserData(1)
         -- UserData: 0 = ball; 1 = normal block
         if i>=1 and i<=3 then currentposh = currentposh - 32
         else
-            if i%levels[l].slope==0 then
-                if currentposh>=plancher[i].body:getY()-(32*levels[l].minheight+32) then currentposh = currentposh - 32
-                elseif currentposh<=plancher[i].body:getY()-(32*levels[l].maxheight+32) then currentposh = currentposh + 32
+            if i%slope==0 then
+                if currentposh>=floor[i].body:getY()-(32*minheight+32) then currentposh = currentposh - 32
+                elseif currentposh<=floor[i].body:getY()-(32*maxheight+32) then currentposh = currentposh + 32
                 else currentposh = currentposh + love.math.random(-1,1)*32
                 end
             end
         end
 
-        plafond[i] = {}
-        plafond[i].body = love.physics.newBody(world, 32*i, currentposh)
-        plafond[i].shape = love.physics.newRectangleShape(0, 0, 32, 32)
-        plafond[i].fixture = love.physics.newFixture(plafond[i].body, plafond[i].shape)
+        roof[i] = {}
+        roof[i].body = love.physics.newBody(world, 32*i, currentposh)
+        roof[i].shape = love.physics.newRectangleShape(0, 0, 32, 32)
+        roof[i].fixture = love.physics.newFixture(roof[i].body, roof[i].shape)
+        roof[i].fixture:setUserData(1)
     end
+    blockset = {}
+    for i=1,length do
+        table.insert(blockset,floor[i])
+        table.insert(blockset,roof[i])
+    end
+    return blockset, love.math.getRandomSeed()
+end
+
+function loadLevel(levelTable)
+    touchnorm = false
+
+    physicsClean(currentBlocks)
+    collectgarbage("collect")
+    currentBlocks = {}
+
+    ball.body:setPosition(64, 208)
+    ball.body:setLinearVelocity(0,0)
+    time = time + currentLevelTable.levelTime()
+    if time > 1000 then time = 1000 end
+    b=1
+    w=1
+    a=1
+
+    currentBlocks = levelTable.levelBlocks()
 end
 
 function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levelpacks[levelpack].."&version="..version) end
@@ -179,32 +223,25 @@ function love.update(dt)
         if love.keyboard.isDown("h") then
             state = "help"
         end
-        if love.keyboard.isDown("left") then
-            levelpack = (levelpack-2)%#levelpacks+1
-            loadLevelpack(levelpack)
-        end
-        if love.keyboard.isDown("right") then
-            levelpack = levelpack%#levelpacks+1
-            loadLevelpack(levelpack)
-        end
         if love.keyboard.isDown("return") then
             score = 0
             time = 0
             level = 1
-            loadLevelpack(levelpack)
-            loadLevel(1)
+            currentLevelTable = loadLevelpack(levelpack)
+            currentLevelTable.gotoFirstLevel()
+            loadLevel(currentLevelTable)
             state = "game"
         end
     elseif state == "game" then
-        love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - "..levels[level].name) --.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
+        love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - "..currentLevelTable.levelName()) --.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
         world:update(dt)
         time = time-dt
         ani = ani+dt
 
-        if ani > levels[level].anispeed then
-            if b == #levels[level].bgspr then b=1 else b=b+1 end
-            if w == #levels[level].wallspr then w=1 else w=w+1 end
-            if a == #levels[level].ballspr then a=1 else a=a+1 end
+        if ani > currentLevelTable.levelAnispeed() then
+            if b == #currentLevelTable.levelBgspr() then b=1 else b=b+1 end
+            if w == #currentLevelTable.levelWallspr() then w=1 else w=w+1 end
+            if a == #currentLevelTable.levelBallspr() then a=1 else a=a+1 end
             ani = 0
         end
 
@@ -233,42 +270,41 @@ function love.update(dt)
         --[[if love.keyboard.isDown("z") then
             if level > 1 then
                 level = level-1
-                loadLevel(level)
+                loadLevel(levels,level)
             end
         end
         if love.keyboard.isDown("x") then
             if level < levels.count then
                 level = level+1
-                loadLevel(level)
+                loadLevel(levels,level)
             end
         end]]--
-        if ball.body:getX() > 32*levels[level].length then
-            level = level+1
+        if ball.body:getX() > 32*currentLevelTable.levelLength() then
             score = score+time*10
-            if level > levels.count then
+            if currentLevelTable.gotoNextLevel() then
+                loadLevel(currentLevelTable)
+            else
                 name = ""
                 state = "won"
-            else
-                loadLevel(level)
             end
         end
         if time < 0 then
             state = "lost"
         end
     elseif state == "pause" then
-        love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - PAUSE - "..levels[level].name)--.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
+        love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - PAUSE - "..currentLevelTable.levelName())--.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
     elseif state == "won" or state == "lost" then
         love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("return") then
             if state == "won" then
-                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..levelpacks[levelpack])
+                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.name())
             end
             scoreboard = nil
             state = "scoreboard"
         end
     elseif state == "scoreboard" then
         if scoreboard == nil then
-            scoreboard = loadScoreboard(version,levels.name)
+            scoreboard = loadScoreboard(version,currentLevelTable.name())
             if scoreboard ~= nil then
                 --[[i=1
                 for c, k, v in string.gmatch(scoreboard, "(%w+)\t(%w+)\t(%w+)") do
@@ -277,24 +313,14 @@ function love.update(dt)
                 end]]
                 scores = JSON:decode(scoreboard)
                 flags = {}
-                for i=1,#scores do
-                    if love.filesystem.exists("flags/"..string.lower(scores[i]["country"])..".png") then
-                        flags[i] = love.graphics.newImage("flags/"..string.lower(scores[i]["country"])..".png")
+                for i, v in ipairs(scores) do
+                    if love.filesystem.exists("flags/"..string.lower(v["country"])..".png") then
+                        flags[i] = love.graphics.newImage("flags/"..string.lower(v["country"])..".png")
                     else
                         flags[i] = love.graphics.newImage("flags/xx.png")
                     end
                 end
             end
-        end
-        if love.keyboard.isDown("left") then
-            levelpack = (levelpack-2)%#levelpacks+1
-            loadLevelpack(levelpack)
-            scoreboard = loadScoreboard(version,levels.name)
-        end
-        if love.keyboard.isDown("right") then
-            levelpack = levelpack%#levelpacks+1
-            loadLevelpack(levelpack)
-            scoreboard = loadScoreboard(version,levels.name)
         end
         if love.keyboard.isDown("escape") then
             state = "intro"
@@ -332,23 +358,37 @@ end
 
 function love.keypressed(key, isrepeat)
     if state ~= "won" then
-        if key=='m' then
-            if music:getVolume() == 1 then
-                music:setVolume(0)
-            else
-                music:setVolume(1)
-            end
-        elseif key=='q' then
-            love.event.quit()
-        elseif key=='p' then
-            if state == "game" then
-                music:pause()
-                state = "pause"
-            elseif state == "pause" then
-                music:play()
-                state = "game"
-            end
+    if state == "intro" or state == "scoreboard" then
+        if love.keyboard.isDown("left") then
+            levelpack = (levelpack-2)%#levelpacks+1
+            currentLevelTable = loadLevelpack(levelpack)
+            if state == "scoreboard" then scoreboard = loadScoreboard(version,levels.name) end
         end
+        if love.keyboard.isDown("right") then
+            levelpack = levelpack%#levelpacks+1
+            currentLevelTable = loadLevelpack(levelpack)
+            if state == "scoreboard" then scoreboard = loadScoreboard(version,levels.name) end
+        end
+    end
+    if key=='m' then
+        if music:getVolume() == 1 then
+            music:setVolume(0)
+        else
+            music:setVolume(1)
+        end
+    elseif key=='q' then
+        love.event.quit()
+    elseif key=='p' then
+        if state == "game" then
+            music:pause()
+            state = "pause"
+        elseif state == "pause" then
+            music:play()
+            state = "game"
+        end
+    end
+    elseif key=='f' then
+        love.window.setFullscreen(not love.window.getFullscreen())
     end
 end
 
@@ -387,32 +427,29 @@ function love.draw()
         end
         printCenter("JULOSOFT PRESENTS",32)
         love.graphics.draw(title, windowWidth/2-248, 72)
-        printCenter(levels.name,288)
+        printCenter(currentLevelTable.name,288)
         printCenter([[PRESS ENTER
-		
-		
-		
+        
+        
+        
         PRESS S FOR HIGHSCORES
         PRESS H FOR HELP AND CREDITS
-		
+        
         ©2013 DJ OMNIMAGA - OMNIMAGA.ORG
         ©2013 JUJU2143 - JULOSOFT.NET]],320)
         love.graphics.print(version, 0, windowHeight-16)
     elseif state == "game" or state == "pause" then
-        geometry = love.graphics.newQuad(levels[level].bgspr[b]%8*32,math.floor(levels[level].bgspr[b]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
-        tileBackground(sprites,geometry,ball.body:getX()/levels[level].scrollspeed,ball.body:getY()/levels[level].scrollspeed,windowWidth,windowHeight)
+        geometry = love.graphics.newQuad(currentLevelTable.levelBgspr()[b]%8*32,math.floor(currentLevelTable.levelBgspr()[b]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
+        tileBackground(sprites,geometry,ball.body:getX()/currentLevelTable.levelScrollspeed(),ball.body:getY()/currentLevelTable.levelScrollspeed(),windowWidth,windowHeight)
         love.graphics.push();
         love.graphics.translate(-ball.body:getX()+windowWidth/2, -ball.body:getY()+windowHeight/2)
 
         love.graphics.setColor(255,255,255)
-        love.graphics.draw(csprites[levels[level].ballspr[a]], ball.body:getX(), ball.body:getY(), ball.body:getAngle(), 1, 1, ball.shape:getRadius(), ball.shape:getRadius())
+        love.graphics.draw(csprites[currentLevelTable.levelBallspr()[a]], ball.body:getX(), ball.body:getY(), ball.body:getAngle(), 1, 1, ball.shape:getRadius(), ball.shape:getRadius())
 
-        geometry = love.graphics.newQuad(levels[level].wallspr[w]%8*32,math.floor(levels[level].wallspr[w]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
-        for i=1,levels[level].length do
-            love.graphics.draw(sprites, geometry, plancher[i].body:getX()-16, plancher[i].body:getY()-16)
-        end
-        for i=1,levels[level].length do
-            love.graphics.draw(sprites, geometry, plafond[i].body:getX()-16, plafond[i].body:getY()-16)
+        geometry = love.graphics.newQuad(currentLevelTable.levelWallspr()[w]%8*32,math.floor(currentLevelTable.levelWallspr()[w]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
+        for i, v in ipairs(currentBlocks) do
+            love.graphics.draw(sprites, geometry, v.body:getX()-16, v.body:getY()-16)
         end
         love.graphics.pop();
         love.graphics.print("SCORE", 16, 16);
@@ -440,10 +477,10 @@ function love.draw()
         if scoreboard == nil then
             love.graphics.printf("LOADING...", 16, 64, windowWidth-32, "left")
         else
-            for i=1,#scores do
+            for i, v in ipairs(scores) do
                 love.graphics.draw(flags[i], 16, 50+16*i)
-                love.graphics.printf(scores[i]["name"], 32, 50+16*i, windowWidth-32, "left")
-                love.graphics.printf(scores[i]["score"], 16, 50+16*i, windowWidth-32, "right")
+                love.graphics.printf(v["name"], 32, 50+16*i, windowWidth-32, "left")
+                love.graphics.printf(v["score"], 16, 50+16*i, windowWidth-32, "right")
             end
         end
         love.graphics.printf("PRESS ESCAPE", 0, windowHeight-32, windowWidth, "center")

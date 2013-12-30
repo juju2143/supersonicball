@@ -16,7 +16,7 @@ function love.conf(t)
     t.window.resizable = true         -- Let the window be user-resizable (boolean)
     t.window.minwidth = 1              -- Minimum window width if the window is resizable (number)
     t.window.minheight = 1             -- Minimum window height if the window is resizable (number)
-    t.window.fullscreentype = "normal" -- Standard fullscreen or desktop fullscreen mode (string)
+    t.window.fullscreentype = "desktop" -- Standard fullscreen or desktop fullscreen mode (string)
     t.window.display = 1               -- Index of the monitor to show the window in (number)
 
     t.modules.joystick = false  -- Enable the joystick module (boolean)
