@@ -14,7 +14,6 @@ function love.load()
 
     gametime = 0
     name = ""
-    level = 1
     time = 0
     score = 0
     scores={}
@@ -226,7 +225,6 @@ function love.update(dt)
         if love.keyboard.isDown("return") then
             score = 0
             time = 0
-            level = 1
             currentLevelTable = loadLevelpack(levelpack)
             currentLevelTable.gotoFirstLevel()
             loadLevel(currentLevelTable)
@@ -297,7 +295,7 @@ function love.update(dt)
         love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("return") then
             if state == "won" then
-                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.name())
+                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.name)
             end
             scoreboard = nil
             state = "scoreboard"
@@ -456,7 +454,7 @@ function love.draw()
         love.graphics.print("LV", 128, 16);
         love.graphics.print("TIME", windowWidth-80, 16);
         love.graphics.print(string.format("%06d", score), 16, 32);
-        love.graphics.print(string.format("%02d", level), 128, 32);
+        love.graphics.print(string.format("%02d", currentLevelTable.level), 128, 32);
         love.graphics.print(string.format("⌚%03d",time), windowWidth-80, 32);
         if state == "pause" then
             printCenter("PAUSE",windowHeight/2-7)
