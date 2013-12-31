@@ -338,7 +338,7 @@ function love.update(dt)
         end
     elseif state == "scoreboard" then
         if scoreboard == nil then
-            scoreboard = loadScoreboard(version,currentLevelTable.name())
+            scoreboard = loadScoreboard(version,currentLevelTable.name)
             if scoreboard ~= nil then
                 --[[i=1
                 for c, k, v in string.gmatch(scoreboard, "(%w+)\t(%w+)\t(%w+)") do
@@ -396,12 +396,12 @@ function love.keypressed(key, isrepeat)
         if love.keyboard.isDown("left") then
             levelpack = (levelpack-2)%#levelpacks+1
             currentLevelTable = loadLevelTable(levelpacks[levelpack])
-            if state == "scoreboard" then scoreboard = loadScoreboard(version,levels.name) end
+            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.name) end
         end
         if love.keyboard.isDown("right") then
             levelpack = levelpack%#levelpacks+1
             currentLevelTable = loadLevelTable(levelpacks[levelpack])
-            if state == "scoreboard" then scoreboard = loadScoreboard(version,levels.name) end
+            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.name) end
         end
     end
     if key=='m' then
@@ -507,7 +507,7 @@ function love.draw()
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
         printCenter("HIGH SCORES",16)
-        printCenter(levels.name,32)
+        printCenter(currentLevelTable.name,32)
         if scoreboard == nil then
             love.graphics.printf("LOADING...", 16, 64, windowWidth-32, "left")
         else
