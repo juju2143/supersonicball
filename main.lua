@@ -23,8 +23,12 @@ function love.load()
     a=1
 
     levelpacks = {"originallevels"}
+    for i, v in ipairs(levelpacks) do
+        levelpacks[i] = packToLevelTable(love.filesystem.load(v..".lua")())
+    end
     levelpack = 1
-    currentLevelTable = loadLevelpack(levelpack)
+    table.insert(levelpacks, infiniteLevelTable())
+    currentLevelTable = loadLevelTable(levelpacks[levelpack])
 
     csprites = {}
 
@@ -74,7 +78,7 @@ function love.load()
 
     --love.graphics.setMode(640, 480)
     love.window.setTitle("Supersonic Ball")
-    loadLevelpack(levelpack)
+    loadLevelTable(levelpacks[levelpack])
     loadSprites("sprites.png")
     love.graphics.setFont(hudfont);
     music:play()
@@ -95,22 +99,18 @@ function packToLevelTable(pack)
     levelTable.shortname = pack.shortname
     levelTable.author = pack.author
     levelTable.spritesheet = pack.spritesheet
-    levelTable.count = pack.count
-    levelTable.levels = {}
-    for i=1,levelTable.count do
-        levelTable.levels[i] = pack[i]
+    levelTable.resetVelocity = true
+    local levels = {}
+    for i=1,pack.count do
+        levels[i] = pack[i]
     end
     levelTable.level = 1
-    levelTable.gotoFirstLevel = function () levelTable.level = 1 end
-    levelTable.gotoNextLevel = function () if levelTable.level ~= pack.count
-        then levelTable.level = levelTable.level + 1; return true
-        else return false end
-    end
-    levelTable.gotoPreviousLevel = function () if levelTable.level ~= 1
-        then levelTable.level = levelTable.level - 1; return true
-        else return false end
-    end
-    local currentLevel = function () return levelTable.levels[levelTable.level] end
+    local rng = love.math.newRandomGenerator()
+    local currentLevel = function () return levels[levelTable.level] end
+    local generateLevel = function ()
+        physicsClean(levelTable.levelBlocks); collectgarbage("collect"); levelTable.levelBlocks = {}
+        rng:setSeed(currentLevel().seed)
+        levelTable.levelBlocks = generateBlocks(rng,currentLevel().rndintrv,currentLevel().slope,currentLevel().minheight,currentLevel().maxheight,currentLevel().length) end
     levelTable.levelName = function () return currentLevel().name end
     levelTable.levelTime = function () return currentLevel().time end
     levelTable.levelLength = function () return currentLevel().length end
@@ -119,7 +119,48 @@ function packToLevelTable(pack)
     levelTable.levelBallspr = function () return currentLevel().ballspr end
     levelTable.levelScrollspeed = function () return currentLevel().scrollspeed end
     levelTable.levelAnispeed = function () return currentLevel().anispeed end
-    levelTable.levelBlocks = function () return generateBlocks(currentLevel().seed,currentLevel().rndintrv,currentLevel().slope,currentLevel().minheight,currentLevel().maxheight,currentLevel().length) end
+    levelTable.levelBlocks = {}
+    levelTable.gotoFirstLevel = function () levelTable.level = 1; generateLevel() end
+    levelTable.gotoNextLevel = function () if levelTable.level ~= pack.count
+        then levelTable.level = levelTable.level + 1; generateLevel(); return true
+        else return false end
+    end
+    levelTable.gotoPreviousLevel = function () if levelTable.level ~= 1
+        then levelTable.level = levelTable.level - 1; generateLevel(); return true
+        else return false end
+    end
+    return levelTable
+end
+
+function infiniteLevelTable()
+    local levelTable = {}
+    levelTable.name = "Infinite Test"
+    levelTable.shortname = "infiniteTest"
+    levelTable.author = "bb010g"
+    levelTable.spritesheet = "sprites.png"
+    levelTable.level = 1
+    levelTable.levelBlocks = {}
+    levelTable.resetVelocity = false
+    local initSeed, rndintrv, slope, minheight, maxheight, length = 1, 5, 5, 4, 5, 128
+    local rngHistory
+    local newRng
+    local generateLevel = function ()
+        physicsClean(levelTable.levelBlocks); collectgarbage("collect"); levelTable.levelBlocks = {}
+        levelTable.levelBlocks, newRng = generateBlocks(rngHistory[#rngHistory],rndintrv,slope,minheight,maxheight,length) end
+    levelTable.levelName = function () return "Infinite Level" end
+    levelTable.levelTime = function () return 13 end
+    levelTable.levelLength = function () return length end
+    levelTable.levelBgspr = function () return {7} end
+    levelTable.levelWallspr = function () return {3,4,5,6} end
+    levelTable.levelBallspr = function () return {"ballnorm"} end
+    levelTable.levelScrollspeed = function () return 4 end
+    levelTable.levelAnispeed = function () return .1 end
+    levelTable.gotoFirstLevel = function () levelTable.level = 1; rngHistory = {love.math.newRandomGenerator(initSeed)}; generateLevel() end
+    levelTable.gotoNextLevel = function () levelTable.level = levelTable.level + 1; table.insert(rngHistory, newRng); generateLevel(); return true end
+    levelTable.gotoPreviousLevel = function () if levelTable.level ~= 1
+        then levelTable.level = levelTable.level + 1; rngHistory[#rngHistory] = nil; generateLevel(); return true
+        else return false end
+    end
     return levelTable
 end
 
@@ -129,12 +170,9 @@ function loadSprites(ss)
     sprites:setFilter("nearest", "nearest")
 end
 
-function loadLevelpack(p)
-    local levels
-    levels = love.filesystem.load(levelpacks[p]..".lua")()
-    levels = packToLevelTable(levels)
-    loadSprites(levels.spritesheet)
-    return levels
+function loadLevelTable(lt)
+    loadSprites(lt.spritesheet)
+    return lt
 end
 
 function physicsClean(array)
@@ -147,11 +185,10 @@ function physicsClean(array)
     end
 end
 
-function generateBlocks(seed,rndintrv,slope,minheight,maxheight,length)
+function generateBlocks(rng,rndintrv,slope,minheight,maxheight,length)
     local floor,roof,blockset,currentposl,currentposh
     currentposl, currentposh = 208, 240
     floor, roof = {}, {}
-    love.math.setRandomSeed(seed)
     for i=1,length do
         --[[if i%rndintrv==0 and slope>1 then
             slope = slope + love.math.random(-1,1)
@@ -160,7 +197,7 @@ function generateBlocks(seed,rndintrv,slope,minheight,maxheight,length)
         end
         ]]
         if i>=1 and i<=3 then currentposl = currentposl + 32
-        elseif i%slope==0 then currentposl = currentposl + love.math.random(-1,1)*32
+        elseif i%slope==0 then currentposl = currentposl + rng:random(-1,1)*32
         end
         floor[i] = {}
         floor[i].body = love.physics.newBody(world, 32*i, currentposl)
@@ -173,7 +210,7 @@ function generateBlocks(seed,rndintrv,slope,minheight,maxheight,length)
             if i%slope==0 then
                 if currentposh>=floor[i].body:getY()-(32*minheight+32) then currentposh = currentposh - 32
                 elseif currentposh<=floor[i].body:getY()-(32*maxheight+32) then currentposh = currentposh + 32
-                else currentposh = currentposh + love.math.random(-1,1)*32
+                else currentposh = currentposh + rng:random(-1,1)*32
                 end
             end
         end
@@ -189,25 +226,23 @@ function generateBlocks(seed,rndintrv,slope,minheight,maxheight,length)
         table.insert(blockset,floor[i])
         table.insert(blockset,roof[i])
     end
-    return blockset, love.math.getRandomSeed()
+    return blockset, rng
 end
 
 function loadLevel(levelTable)
     touchnorm = false
 
-    physicsClean(currentBlocks)
-    collectgarbage("collect")
     currentBlocks = {}
 
     ball.body:setPosition(64, 208)
-    ball.body:setLinearVelocity(0,0)
+    if levelTable.resetVelocity then ball.body:setLinearVelocity(0,0) end
     time = time + currentLevelTable.levelTime()
     if time > 1000 then time = 1000 end
     b=1
     w=1
     a=1
 
-    currentBlocks = levelTable.levelBlocks()
+    currentBlocks = levelTable.levelBlocks
 end
 
 function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..currentLevelTable.shortname.."&version="..version) end
@@ -226,7 +261,7 @@ function love.update(dt)
         if love.keyboard.isDown("return") then
             score = 0
             time = 0
-            currentLevelTable = loadLevelpack(levelpack)
+            currentLevelTable = loadLevelTable(levelpacks[levelpack])
             currentLevelTable.gotoFirstLevel()
             loadLevel(currentLevelTable)
             state = "game"
@@ -360,12 +395,12 @@ function love.keypressed(key, isrepeat)
     if state == "intro" or state == "scoreboard" then
         if love.keyboard.isDown("left") then
             levelpack = (levelpack-2)%#levelpacks+1
-            currentLevelTable = loadLevelpack(levelpack)
+            currentLevelTable = loadLevelTable(levelpacks[levelpack])
             if state == "scoreboard" then scoreboard = loadScoreboard(version,levels.name) end
         end
         if love.keyboard.isDown("right") then
             levelpack = levelpack%#levelpacks+1
-            currentLevelTable = loadLevelpack(levelpack)
+            currentLevelTable = loadLevelTable(levelpacks[levelpack])
             if state == "scoreboard" then scoreboard = loadScoreboard(version,levels.name) end
         end
     end
