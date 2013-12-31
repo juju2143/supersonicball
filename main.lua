@@ -331,14 +331,14 @@ function love.update(dt)
         love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("return") then
             if state == "won" then
-                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.name)
+                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.shortname)
             end
             scoreboard = nil
             state = "scoreboard"
         end
     elseif state == "scoreboard" then
         if scoreboard == nil then
-            scoreboard = loadScoreboard(version,currentLevelTable.name)
+            scoreboard = loadScoreboard(version,currentLevelTable.shortname)
             if scoreboard ~= nil then
                 --[[i=1
                 for c, k, v in string.gmatch(scoreboard, "(%w+)\t(%w+)\t(%w+)") do
@@ -396,12 +396,12 @@ function love.keypressed(key, isrepeat)
         if love.keyboard.isDown("left") then
             levelpack = (levelpack-2)%#levelpacks+1
             currentLevelTable = loadLevelTable(levelpacks[levelpack])
-            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.name) end
+            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.shortname) end
         end
         if love.keyboard.isDown("right") then
             levelpack = levelpack%#levelpacks+1
             currentLevelTable = loadLevelTable(levelpacks[levelpack])
-            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.name) end
+            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.shortname) end
         end
     end
     if key=='m' then
