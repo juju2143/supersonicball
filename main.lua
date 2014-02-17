@@ -5,7 +5,7 @@ function love.load()
     love.graphics.setBackgroundColor(0,0,0)
     state = "intro"
     version = "0.9.2"
-    release = "Christmas Week"
+    release = "Christmas Week - Indev"
     debugging = false
 
     love.physics.setMeter(32)
@@ -16,18 +16,25 @@ function love.load()
     name = ""
     time = 0
     score = 0
-    scores={}
+    scores = {}
     ani = 0
     b=1
     w=1
     a=1
 
-    levelpacks = {"originallevels"}
-    for i, v in ipairs(levelpacks) do
-        levelpacks[i] = packToLevelTable(love.filesystem.load(v..".lua")())
-    end
+    currentdir = love.filesystem.getDirectoryItems(".")
+    parentdir = love.filesystem.getDirectoryItems("..")
+    levelpacks = {}
+    levelfiles = {}
+    for i, v in ipairs(currentdir) do table.insert(levelfiles,string.match(v,".*%.sbl")) end
+    for i, v in ipairs(parentdir) do table.insert(levelfiles,string.match(v,".*%.sbl")) end
+    for i, v in ipairs(levelfiles) do table.insert(levelpacks,packToLevelTable(love.filesystem.load(v)())) end
+    levelfiles = {}
     levelpack = 1
-    table.insert(levelpacks, infiniteLevelTable())
+    for i, v in ipairs(currentdir) do table.insert(levelfiles,string.match(v,".*%.sbt")) end
+    for i, v in ipairs(parentdir) do table.insert(levelfiles,string.match(v,".*%.sbt")) end
+    for i, v in ipairs(levelfiles) do table.insert(levelpacks,love.filesystem.load(v)()()) end
+    levelfiles = {}
     currentLevelTable = loadLevelTable(levelpacks[levelpack])
 
     csprites = {}
@@ -80,7 +87,7 @@ function love.load()
     love.window.setTitle("Supersonic Ball")
     loadLevelTable(levelpacks[levelpack])
     loadSprites("sprites.png")
-    love.graphics.setFont(hudfont);
+    love.graphics.setFont(hudfont)
     music:play()
 end
 
@@ -94,73 +101,49 @@ function contains(table, element)
 end
 
 function packToLevelTable(pack)
-    local levelTable = {}
-    levelTable.name = pack.name
-    levelTable.shortname = pack.shortname
-    levelTable.author = pack.author
-    levelTable.spritesheet = pack.spritesheet
-    levelTable.resetVelocity = true
+    local looping, loopdivisor
+    local levelTable = {name = pack.name, shortname = pack.shortname, author = pack.author, spritesheet = pack.spritesheet, resetVelocity = pack.resetvelocity, maxTime = pack.maxtime, looping = pack.looping, loopDivisor = pack.loopdivisor}
     local levels = {}
-    for i=1,pack.count do
-        levels[i] = pack[i]
-    end
+    for i=1,pack.count do levels[i] = pack[i] end
+    local level = 1
     levelTable.level = 1
+    local loop = 1
+    local function levelChange(n) levelTable.level=(levelTable.level+n); level=level+n end
     local rng = love.math.newRandomGenerator()
-    local currentLevel = function () return levels[levelTable.level] end
-    local generateLevel = function ()
+    local function currentLevel() return levels[level] end
+    local function generateLevel()
         physicsClean(levelTable.levelBlocks); collectgarbage("collect"); levelTable.levelBlocks = {}
         rng:setSeed(currentLevel().seed)
         levelTable.levelBlocks = generateBlocks(rng,currentLevel().rndintrv,currentLevel().slope,currentLevel().minheight,currentLevel().maxheight,currentLevel().length) end
-    levelTable.levelName = function () return currentLevel().name end
-    levelTable.levelTime = function () return currentLevel().time end
-    levelTable.levelLength = function () return currentLevel().length end
-    levelTable.levelBgspr = function () return currentLevel().bgspr end
-    levelTable.levelWallspr = function () return currentLevel().wallspr end
-    levelTable.levelBallspr = function () return currentLevel().ballspr end
-    levelTable.levelScrollspeed = function () return currentLevel().scrollspeed end
-    levelTable.levelAnispeed = function () return currentLevel().anispeed end
+    function levelTable.levelName() return currentLevel().name end
+    function levelTable.levelTime()
+        return math.max(math.floor(currentLevel().time/loop),15)
+    end
+    function levelTable.levelLength() return currentLevel().length end
+    function levelTable.levelBgspr() return currentLevel().bgspr end
+    function levelTable.levelWallspr() return currentLevel().wallspr end
+    function levelTable.levelBallspr() return currentLevel().ballspr end
+    function levelTable.levelScrollspeed () return currentLevel().scrollspeed end
+    function levelTable.levelAnispeed() return currentLevel().anispeed end
     levelTable.levelBlocks = {}
-    levelTable.gotoFirstLevel = function () levelTable.level = 1; generateLevel() end
-    levelTable.gotoNextLevel = function () if levelTable.level ~= pack.count
-        then levelTable.level = levelTable.level + 1; generateLevel(); return true
+    function levelTable.gotoFirstLevel() levelTable.level, level = 1, 1; generateLevel() end
+    if looping then function levelTable.gotoNextLevel()
+        if levelTable.level == pack.count then level = 0 end
+        levelChange(1); generateLevel(); return true
+    end else function levelTable.gotoNextLevel()
+        if level ~= pack.count
+        then levelChange(1); generateLevel(); return true
         else return false end
-    end
-    levelTable.gotoPreviousLevel = function () if levelTable.level ~= 1
-        then levelTable.level = levelTable.level - 1; generateLevel(); return true
+    end end
+    if looping then function levelTable.gotoPreviousLevel()
+        if level ~= 1
+        then levelChange(-1); generateLevel(); return true
         else return false end
-    end
-    return levelTable
-end
-
-function infiniteLevelTable()
-    local levelTable = {}
-    levelTable.name = "Infinite Test"
-    levelTable.shortname = "infiniteTest"
-    levelTable.author = "bb010g"
-    levelTable.spritesheet = "sprites.png"
-    levelTable.level = 1
-    levelTable.levelBlocks = {}
-    levelTable.resetVelocity = false
-    local initSeed, rndintrv, slope, minheight, maxheight, length = 1, 5, 5, 4, 5, 128
-    local rngHistory
-    local newRng
-    local generateLevel = function ()
-        physicsClean(levelTable.levelBlocks); collectgarbage("collect"); levelTable.levelBlocks = {}
-        levelTable.levelBlocks, newRng = generateBlocks(rngHistory[#rngHistory],rndintrv,slope,minheight,maxheight,length) end
-    levelTable.levelName = function () return "Infinite Level" end
-    levelTable.levelTime = function () return 13 end
-    levelTable.levelLength = function () return length end
-    levelTable.levelBgspr = function () return {7} end
-    levelTable.levelWallspr = function () return {3,4,5,6} end
-    levelTable.levelBallspr = function () return {"ballnorm"} end
-    levelTable.levelScrollspeed = function () return 4 end
-    levelTable.levelAnispeed = function () return .1 end
-    levelTable.gotoFirstLevel = function () levelTable.level = 1; rngHistory = {love.math.newRandomGenerator(initSeed)}; generateLevel() end
-    levelTable.gotoNextLevel = function () levelTable.level = levelTable.level + 1; table.insert(rngHistory, newRng); generateLevel(); return true end
-    levelTable.gotoPreviousLevel = function () if levelTable.level ~= 1
-        then levelTable.level = levelTable.level + 1; rngHistory[#rngHistory] = nil; generateLevel(); return true
+    end else function levelTable.gotoPreviousLevel()
+        if level ~= 1
+        then levelChange(-1); generateLevel(); return true
         else return false end
-    end
+    end end
     return levelTable
 end
 
@@ -237,7 +220,7 @@ function loadLevel(levelTable)
     ball.body:setPosition(64, 208)
     if levelTable.resetVelocity then ball.body:setLinearVelocity(0,0) end
     time = time + currentLevelTable.levelTime()
-    if time > 1000 then time = 1000 end
+    time = math.min(time,currentLevelTable.maxTime or time)
     b=1
     w=1
     a=1
@@ -299,6 +282,7 @@ function love.update(dt)
             ball.body:setLinearVelocity(0,0)
         end
         if love.keyboard.isDown("escape") then
+            physicsClean(currentBlocks)
             state = "intro"
         end
         --[[if love.keyboard.isDown("z") then
@@ -330,9 +314,7 @@ function love.update(dt)
     elseif state == "won" or state == "lost" then
         love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("return") then
-            if state == "won" then
-                http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.shortname)
-            end
+            http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.shortname)
             scoreboard = nil
             state = "scoreboard"
         end
@@ -391,7 +373,7 @@ function postSolve(a, b, coll)
 end
 
 function love.keypressed(key, isrepeat)
-    if state ~= "won" then
+    if state ~= "won" or state ~= "lost" then
     if state == "intro" or state == "scoreboard" then
         if love.keyboard.isDown("left") then
             levelpack = (levelpack-2)%#levelpacks+1
@@ -427,7 +409,7 @@ function love.keypressed(key, isrepeat)
 end
 
 function love.textinput(t)
-    if state == "won" and t:match("^[0-9a-zA-Z%,%'%.%!%?%:%-% ]$") ~= nil then
+    if (state == "won" or state == "lost") and t:match("^[0-9a-zA-Z%,%'%.%!%?%:%-% ]$") ~= nil then
         name = name..t
     end
 end
@@ -462,15 +444,15 @@ function love.draw()
         printCenter("JULOSOFT PRESENTS",32)
         love.graphics.draw(title, windowWidth/2-248, 72)
         printCenter(currentLevelTable.name,288)
+        printCenter("by "..currentLevelTable.author,304)
         printCenter([[PRESS ENTER
-        
         
         
         PRESS S FOR HIGHSCORES
         PRESS H FOR HELP AND CREDITS
         
         ©2013 DJ OMNIMAGA - OMNIMAGA.ORG
-        ©2013 JUJU2143 - JULOSOFT.NET]],320)
+        ©2013 JUJU2143 - JULOSOFT.NET]],336)
         love.graphics.print(version, 0, windowHeight-16)
     elseif state == "game" or state == "pause" then
         geometry = love.graphics.newQuad(currentLevelTable.levelBgspr()[b]%8*32,math.floor(currentLevelTable.levelBgspr()[b]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
@@ -492,17 +474,18 @@ function love.draw()
         love.graphics.print(string.format("%06d", score), 16, 32);
         love.graphics.print(string.format("%02d", currentLevelTable.level), 128, 32);
         love.graphics.print(string.format("⌚%03d",time), windowWidth-80, 32);
+        printCenter(currentLevelTable.levelName(),windowHeight-16)
         if state == "pause" then
             printCenter("PAUSE",windowHeight/2-7)
         end
     elseif state == "won" then
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
-        love.graphics.printf("congratulations you won!\nscore: "..string.format("%06d", score).."\n\nenter your name and press enter:\n"..name, 16, 16, 624, "left")
+        love.graphics.printf("Congratulations! You finished the pack!\nScore: "..string.format("%06d", score).."\n\nEnter your name and press enter:\n"..name, 16, 16, windowWidth-32, "left")
     elseif state == "lost" then
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
-        love.graphics.printf("congratulations you weren't fast enough so you died!\nscore: "..string.format("%06d", score).."\n\npress enter", 16, 16, 624, "left")
+        love.graphics.printf("Congratulations!\nYou died with a score of: "..string.format("%06d", score).."\n\nEnter your name and press enter:\n"..name, 16, 16, windowWidth-32, "left")
     elseif state == "scoreboard" then
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)

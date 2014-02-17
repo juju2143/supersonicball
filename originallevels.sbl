@@ -4,6 +4,10 @@ return {
     author="DJ Omnimaga",
     spritesheet="sprites.png",
     count=16,
+    resetvelocity=true,
+    looping=true,
+    loopdivisor=2,
+    maxtime=1000,
     {
         name = "Level 1",
         seed = 1,
