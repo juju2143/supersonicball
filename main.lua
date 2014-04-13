@@ -4,8 +4,8 @@ function love.load()
 
     love.graphics.setBackgroundColor(0,0,0)
     state = "intro"
-    version = "0.9.2"
-    release = "Christmas Week - Indev"
+    version = "0.9.3"
+    release = "Supersonicstuck"
     debugging = false
 
     love.physics.setMeter(32)
@@ -102,7 +102,7 @@ end
 
 function packToLevelTable(pack)
     local looping, loopdivisor
-    local levelTable = {name = pack.name, shortname = pack.shortname, author = pack.author, spritesheet = pack.spritesheet, resetVelocity = pack.resetvelocity, maxTime = pack.maxtime, looping = pack.looping, loopDivisor = pack.loopdivisor}
+    local levelTable = {name = pack.name, shortname = pack.shortname, author = pack.author, spritesheet = pack.spritesheet, resetVelocity = pack.resetvelocity, maxTime = pack.maxtime, looping = pack.looping, loopDivisor = pack.loopdivisor, winnable = pack.winnable}
     local levels = {}
     for i=1,pack.count do levels[i] = pack[i] end
     local level = 1
@@ -126,7 +126,11 @@ function packToLevelTable(pack)
     function levelTable.levelScrollspeed () return currentLevel().scrollspeed end
     function levelTable.levelAnispeed() return currentLevel().anispeed end
     levelTable.levelBlocks = {}
-    function levelTable.gotoFirstLevel() levelTable.level, level = 1, 1; generateLevel() end
+    function levelTable.gotoFirstLevel()
+		levelTable.level = 1
+		level = 1
+		generateLevel()
+	end
     if looping then function levelTable.gotoNextLevel()
         if levelTable.level == pack.count then level = 0 end
         levelChange(1); generateLevel(); return true
@@ -160,7 +164,7 @@ end
 
 function physicsClean(array)
     for i, v in ipairs(array) do
-        v.fixture:destroy()
+        if v.fixture ~= nil then v.fixture:destroy() end
         v.body = nil
         v.shape = nil
         v.fixture = nil
@@ -228,7 +232,7 @@ function loadLevel(levelTable)
     currentBlocks = levelTable.levelBlocks
 end
 
-function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..currentLevelTable.shortname.."&version="..version) end
+function loadScoreboard(version,levelPack) return http.request("http://julosoft.net/supersonicball/highscores.php?output=json&lvlpack="..levelPack.."&version="..version) end
 
 function love.update(dt)
     gametime = gametime+dt
@@ -249,6 +253,9 @@ function love.update(dt)
             loadLevel(currentLevelTable)
             state = "game"
         end
+		if love.system.getOS() == "Android" then
+			
+		end
     elseif state == "game" then
         love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - "..currentLevelTable.levelName()) --.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
         world:update(dt)
@@ -307,26 +314,30 @@ function love.update(dt)
             end
         end
         if time < 0 then
-            state = "lost"
+			if currentLevelTable.winnable then
+				state = "lost"
+			else
+            	state = "won"
+			end
         end
     elseif state == "pause" then
         love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - PAUSE - "..currentLevelTable.levelName())--.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
     elseif state == "won" or state == "lost" then
         love.window.setTitle("Supersonic Ball")
         if love.keyboard.isDown("return") then
-            http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.shortname)
-            scoreboard = nil
+			if state­ == "won" and score > 0 then
+		        http.request("http://julosoft.net/supersonicball/submit.php?name="..name.."&score="..score.."&version="..version.."&lvlpack="..currentLevelTable.shortname)
+			end
+	        scoreboard = nil
+	        state = "scoreboard"
+        end
+        if love.keyboard.isDown("escape") then
             state = "scoreboard"
         end
     elseif state == "scoreboard" then
         if scoreboard == nil then
             scoreboard = loadScoreboard(version,currentLevelTable.shortname)
             if scoreboard ~= nil then
-                --[[i=1
-                for c, k, v in string.gmatch(scoreboard, "(%w+)\t(%w+)\t(%w+)") do
-                    scores[i] = {country=c, name=k, score=v}
-                    i=i+1
-                end]]
                 scores = JSON:decode(scoreboard)
                 flags = {}
                 for i, v in ipairs(scores) do
@@ -374,42 +385,42 @@ end
 
 function love.keypressed(key, isrepeat)
     if state ~= "won" or state ~= "lost" then
-    if state == "intro" or state == "scoreboard" then
-        if love.keyboard.isDown("left") then
-            levelpack = (levelpack-2)%#levelpacks+1
-            currentLevelTable = loadLevelTable(levelpacks[levelpack])
-            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.shortname) end
-        end
-        if love.keyboard.isDown("right") then
-            levelpack = levelpack%#levelpacks+1
-            currentLevelTable = loadLevelTable(levelpacks[levelpack])
-            if state == "scoreboard" then scoreboard = loadScoreboard(version,currentLevelTable.shortname) end
-        end
-    end
-    if key=='m' then
-        if music:getVolume() == 1 then
-            music:setVolume(0)
-        else
-            music:setVolume(1)
-        end
-    elseif key=='q' then
-        love.event.quit()
-    elseif key=='p' then
-        if state == "game" then
-            music:pause()
-            state = "pause"
-        elseif state == "pause" then
-            music:play()
-            state = "game"
-        end
-    end
+		if state == "intro" or state == "scoreboard" then
+		    if love.keyboard.isDown("left") then
+		        levelpack = (levelpack-2)%#levelpacks+1
+		        currentLevelTable = loadLevelTable(levelpacks[levelpack])
+		        if state == "scoreboard" then scoreboard = nil end
+		    end
+		    if love.keyboard.isDown("right") then
+		        levelpack = levelpack%#levelpacks+1
+		        currentLevelTable = loadLevelTable(levelpacks[levelpack])
+		        if state == "scoreboard" then scoreboard = nil end
+		    end
+		end
+		if key=='m' then
+		    if music:getVolume() == 1 then
+		        music:setVolume(0)
+		    else
+		        music:setVolume(1)
+		    end
+		elseif key=='q' then
+		    love.event.quit()
+		elseif key=='p' then
+		    if state == "game" then
+		        music:pause()
+		        state = "pause"
+		    elseif state == "pause" then
+		        music:play()
+		        state = "game"
+		    end
+		end
     elseif key=='f' then
         love.window.setFullscreen(not love.window.getFullscreen())
     end
 end
 
 function love.textinput(t)
-    if (state == "won" or state == "lost") and t:match("^[0-9a-zA-Z%,%'%.%!%?%:%-% ]$") ~= nil then
+    if state == "won" and t:match("^[0-9a-zA-Z%,%'%.%!%?%:%-% ]$") ~= nil then
         name = name..t
     end
 end
@@ -445,14 +456,25 @@ function love.draw()
         love.graphics.draw(title, windowWidth/2-248, 72)
         printCenter(currentLevelTable.name,288)
         printCenter("by "..currentLevelTable.author,304)
-        printCenter([[PRESS ENTER
-        
-        
-        PRESS S FOR HIGHSCORES
-        PRESS H FOR HELP AND CREDITS
-        
-        ©2013 DJ OMNIMAGA - OMNIMAGA.ORG
-        ©2013 JUJU2143 - JULOSOFT.NET]],336)
+		if love.system.getOS() == "Android" then
+		    printCenter([[TOUCH TO BEGIN
+		    
+		    
+		    HIGHSCORES      HELP AND CREDITS
+			
+		    
+		    ©2013 DJ Omnimaga - omnimaga.org
+		    ©2013-14 juju2143 - julosoft.net]],336)
+		else
+		    printCenter([[PRESS ENTER
+		    
+		    
+		    PRESS S FOR HIGHSCORES
+		    PRESS H FOR HELP AND CREDITS
+		    
+		    ©2013 DJ Omnimaga - omnimaga.org
+		    ©2013-14 juju2143 - julosoft.net]],336)
+		end
         love.graphics.print(version, 0, windowHeight-16)
     elseif state == "game" or state == "pause" then
         geometry = love.graphics.newQuad(currentLevelTable.levelBgspr()[b]%8*32,math.floor(currentLevelTable.levelBgspr()[b]/8)*32,32,32,sprites:getWidth(),sprites:getHeight())
@@ -485,14 +507,14 @@ function love.draw()
     elseif state == "lost" then
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
-        love.graphics.printf("Congratulations!\nYou died with a score of: "..string.format("%06d", score).."\n\nEnter your name and press enter:\n"..name, 16, 16, windowWidth-32, "left")
+        love.graphics.printf("Congratulations! You died!\nScore: "..string.format("%06d", score), 16, 16, windowWidth-32, "left")
     elseif state == "scoreboard" then
         geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
         tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
         printCenter("HIGH SCORES",16)
         printCenter(currentLevelTable.name,32)
         if scoreboard == nil then
-            love.graphics.printf("LOADING...", 16, 64, windowWidth-32, "left")
+            love.graphics.printf("Loading...", 16, 64, windowWidth-32, "left")
         else
             for i, v in ipairs(scores) do
                 love.graphics.draw(flags[i], 16, 50+16*i)

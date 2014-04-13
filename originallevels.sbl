@@ -8,6 +8,7 @@ return {
     looping=true,
     loopdivisor=2,
     maxtime=1000,
+	winnable=true,
     {
         name = "Level 1",
         seed = 1,

@@ -3,6 +3,7 @@ return function()
     levelTable.level = 1
     levelTable.levelBlocks = {}
     levelTable.resetVelocity = false
+	levelTable.winnable = false
     local initSeed, rndintrv, slope, minheight, maxheight, length = 1, 5, 5, 4, 5, 128
     local rngHistory
     local newRng
