@@ -22,20 +22,41 @@ function love.load()
     w=1
     a=1
 
-    currentdir = love.filesystem.getDirectoryItems(".")
-    parentdir = love.filesystem.getDirectoryItems("..")
+	love.filesystem.setIdentity("supersonicball")
+    currentdir = love.filesystem.getDirectoryItems("")
+    --parentdir = love.filesystem.getDirectoryItems("..")
     levelpacks = {}
     levelfiles = {}
-    for i, v in ipairs(currentdir) do table.insert(levelfiles,string.match(v,".*%.sbl")) end
-    for i, v in ipairs(parentdir) do table.insert(levelfiles,string.match(v,".*%.sbl")) end
+    for i, v in ipairs(currentdir) do
+		if string.match(v,".*%.sbl") ~= nil then
+			table.insert(levelfiles,string.match(v,".*%.sbl"))
+			print("Found level: "..string.match(v,".*%.sbl"))
+		end
+	end
+    --[[for i, v in ipairs(parentdir) do
+		if string.match(v,".*%.sbl") ~= nil then
+			table.insert(levelfiles,string.match(v,".*%.sbl"))
+			print("Found level: "..string.match(v,".*%.sbl"))
+		end
+	end]]
     for i, v in ipairs(levelfiles) do table.insert(levelpacks,packToLevelTable(love.filesystem.load(v)())) end
     levelfiles = {}
     levelpack = 1
-    for i, v in ipairs(currentdir) do table.insert(levelfiles,string.match(v,".*%.sbt")) end
-    for i, v in ipairs(parentdir) do table.insert(levelfiles,string.match(v,".*%.sbt")) end
+	for i, v in ipairs(currentdir) do
+		if string.match(v,".*%.sbt") ~= nil then
+			table.insert(levelfiles,string.match(v,".*%.sbt"))
+			print("Found level: "..string.match(v,".*%.sbt"))
+		end
+	end
+    --[[for i, v in ipairs(parentdir) do
+		if string.match(v,".*%.sbt") ~= nil then
+			table.insert(levelfiles,string.match(v,".*%.sbt"))
+			print("Found level: "..string.match(v,".*%.sbt"))
+		end
+	end]]
     for i, v in ipairs(levelfiles) do table.insert(levelpacks,love.filesystem.load(v)()()) end
     levelfiles = {}
-    currentLevelTable = loadLevelTable(levelpacks[levelpack])
+    currentLevelTable = loadLevelTable(assert(levelpacks[levelpack], "No levels found"))
 
     csprites = {}
 
