@@ -274,9 +274,6 @@ function love.update(dt)
             loadLevel(currentLevelTable)
             state = "game"
         end
-		if love.system.getOS() == "Android" then
-			
-		end
     elseif state == "game" then
         love.window.setTitle("Supersonic Ball - "..love.timer.getFPS().." FPS - "..currentLevelTable.levelName()) --.." - Time: "..string.format("%03d",time).. " - Score: "..string.format("%06d",score))
         world:update(dt)
@@ -331,13 +328,15 @@ function love.update(dt)
                 loadLevel(currentLevelTable)
             else
                 name = ""
+				love.keyboard.setTextInput(true)
                 state = "won"
             end
         end
         if time < 0 then
-			if currentLevelTable.winnable then
+			if currentLevelTable.winnable or score == 0 then
 				state = "lost"
 			else
+				love.keyboard.setTextInput(true)
             	state = "won"
 			end
         end
@@ -405,44 +404,75 @@ function postSolve(a, b, coll)
 end
 
 function love.keypressed(key, isrepeat)
-    if state ~= "won" or state ~= "lost" then
-		if state == "intro" or state == "scoreboard" then
-		    if love.keyboard.isDown("left") then
-		        levelpack = (levelpack-2)%#levelpacks+1
-		        currentLevelTable = loadLevelTable(levelpacks[levelpack])
-		        if state == "scoreboard" then scoreboard = nil end
-		    end
-		    if love.keyboard.isDown("right") then
-		        levelpack = levelpack%#levelpacks+1
-		        currentLevelTable = loadLevelTable(levelpacks[levelpack])
-		        if state == "scoreboard" then scoreboard = nil end
-		    end
+    --if state ~= "won" or state ~= "lost" then
+	if state == "intro" or state == "scoreboard" then
+	    if love.keyboard.isDown("left") then
+	        levelpack = (levelpack-2)%#levelpacks+1
+	        currentLevelTable = loadLevelTable(levelpacks[levelpack])
+	        if state == "scoreboard" then scoreboard = nil end
+	    end
+	    if love.keyboard.isDown("right") or love.keyboard.isDown("menu") then
+	        levelpack = levelpack%#levelpacks+1
+	        currentLevelTable = loadLevelTable(levelpacks[levelpack])
+	        if state == "scoreboard" then scoreboard = nil end
+	    end
+	elseif state == "won" then
+		if love.keyboard.isDown("backspace") then
+			name = string.sub(name, 1, -2)
 		end
-		if key=='m' then
-		    if music:getVolume() == 1 then
-		        music:setVolume(0)
-		    else
-		        music:setVolume(1)
-		    end
-		elseif key=='q' then
-		    love.event.quit()
-		elseif key=='p' then
-		    if state == "game" then
-		        music:pause()
-		        state = "pause"
-		    elseif state == "pause" then
-		        music:play()
-		        state = "game"
-		    end
-		end
+	end
+	if key=='m' then
+	    if music:getVolume() == 1 then
+	        music:setVolume(0)
+	    else
+	        music:setVolume(1)
+	    end
+	elseif key=='q' then
+	    love.event.quit()
+	elseif key=='p' then
+	    if state == "game" then
+	        music:pause()
+	        state = "pause"
+	    elseif state == "pause" then
+	        music:play()
+	        state = "game"
+	    end
+	--end
     elseif key=='f' then
         love.window.setFullscreen(not love.window.getFullscreen())
+	elseif key=="escape" then
+		if state == "intro" and love.system.getOS() == "Android" then
+			love.event.quit()
+		else
+			state = "intro"
+		end
     end
+end
+
+function love.touchpressed(id, x, y, pressure)
+	if state == "intro" then
+		if y >= 0.8 then
+			if x < 0.5 then
+		        scoreboard = nil
+		        state = "scoreboard"
+			else
+		        state = "help"
+		    end
+        else
+            score = 0
+            time = 0
+            currentLevelTable = loadLevelTable(levelpacks[levelpack])
+            currentLevelTable.gotoFirstLevel()
+            loadLevel(currentLevelTable)
+            state = "game"
+        end
+    elseif state == "game" then
+	end
 end
 
 function love.textinput(t)
     if state == "won" and t:match("^[0-9a-zA-Z%,%'%.%!%?%:%-% ]$") ~= nil then
-        name = name..t
+		name = name..t
     end
 end
 
@@ -451,6 +481,10 @@ function love.focus(f)
         music:pause()
         state = "pause"
     end
+	if love.system.getOS() == "Android" and f and state == "pause" then
+        music:play()
+        state = "game"
+	end
 end
 
 function tileBackground(image,quad,adjX,adjY,windowWidth,windowHeight)
@@ -479,13 +513,11 @@ function love.draw()
         printCenter("by "..currentLevelTable.author,304)
 		if love.system.getOS() == "Android" then
 		    printCenter([[TOUCH TO BEGIN
-		    
-		    
-		    HIGHSCORES      HELP AND CREDITS
-			
-		    
+
 		    ©2013 DJ Omnimaga - omnimaga.org
 		    ©2013-14 juju2143 - julosoft.net]],336)
+			love.graphics.print("HIGHSCORES", 64, windowHeight-64)
+			love.graphics.print("HELP AND CREDITS", windowWidth-336, windowHeight-64)
 		else
 		    printCenter([[PRESS ENTER
 		    
