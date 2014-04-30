@@ -19,7 +19,7 @@ function love.conf(t)
     t.window.fullscreentype = "desktop" -- Standard fullscreen or desktop fullscreen mode (string)
     t.window.display = 1               -- Index of the monitor to show the window in (number)
 
-    t.modules.joystick = false  -- Enable the joystick module (boolean)
+    t.modules.joystick = true   -- Enable the joystick module (boolean)
     t.modules.audio = true      -- Enable the audio module (boolean)
     t.modules.keyboard = true   -- Enable the keyboard module (boolean)
     t.modules.event = true      -- Enable the event module (boolean)
