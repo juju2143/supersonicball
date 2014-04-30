@@ -535,7 +535,7 @@ function love.draw()
 		printCenter(currentLevelTable.name,288)
 		printCenter("by "..currentLevelTable.author,304)
 		if love.system.getOS() == "Android" then
-			printCenter([[LAY YOUR DEVICE FLAT AND TOUCH TO BEGIN
+			printCenter([[TOUCH TO BEGIN
 
 			©2013 DJ Omnimaga - omnimaga.org
 			©2013-14 juju2143 - julosoft.net]],336)
@@ -603,7 +603,7 @@ function love.draw()
 		geometry = love.graphics.newQuad(64,32,32,32,sprites:getWidth(),sprites:getHeight())
 		tileBackground(sprites,geometry,gametime*30,gametime*30,windowWidth,windowHeight)
 		if love.system.getOS() == "Android" then
-			howto = [[Accelerometer: Move
+			howto = [[Hold touch screen in a direction relative to center to move
 			Back: Return to menu/Quit
 			Menu: Choose level]]
 		else
